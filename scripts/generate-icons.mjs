@@ -4,12 +4,14 @@ import sharp from 'sharp'
 import { readFile } from 'node:fs/promises'
 
 const svg = await readFile('public/favicon.svg')
+// Versão sem cantos arredondados: o iOS e o Android arredondam os ícones por conta própria.
+const squareSvg = Buffer.from(svg.toString().replace('rx="112"', 'rx="0"'))
 const BG = '#0f172a'
 
 async function icon(size, file, padding = 0) {
   const inner = Math.round(size * (1 - padding * 2))
-  const logo = await sharp(svg).resize(inner, inner).png().toBuffer()
-  await sharp({ create: { width: size, height: size, channels: 4, background: padding ? '#0f766e' : BG } })
+  const logo = await sharp(squareSvg).resize(inner, inner).png().toBuffer()
+  await sharp({ create: { width: size, height: size, channels: 4, background: '#0f766e' } })
     .composite([{ input: logo, gravity: 'center' }])
     .png()
     .toFile(file)
